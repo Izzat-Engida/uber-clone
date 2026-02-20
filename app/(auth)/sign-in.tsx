@@ -1,93 +1,152 @@
-import { Text, ScrollView, StyleSheet, View, Image } from 'react-native'
-import React, { useState } from 'react'
-import { icons, images } from '@/constants'
-import InputField from '@/components/InputField'
-import CustomButton from '@/components/CustomButton'
-import { Link } from 'expo-router'
-import OAuth from '@/components/OAuth'
+import { Text, ScrollView, StyleSheet, View, Image } from 'react-native';
+import React, { useState } from 'react';
+import { icons, images } from '@/constants';
+import InputField from '@/components/InputField';
+import CustomButton from '@/components/CustomButton';
+import { Link, router } from 'expo-router';
+import OAuth from '@/components/OAuth';
+import { useSignIn } from '@clerk/clerk-expo';
 
-const Signin = () => {
-  const [form,setForm]=useState({
-    name:"",
-    email:"",
-    password:"",
-  })
-  const handleSubmit=async()=>{
+const SignIn = () => {
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  });
 
-  }
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { signIn, setActive, isLoaded } = useSignIn();
+
+  const handleSignIn = async () => {
+    if (!isLoaded || isLoading) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const signInAttempt = await signIn.create({
+        identifier: form.email,
+        password: form.password,
+      });
+
+      if (signInAttempt.status === 'complete') {
+        await setActive({ session: signInAttempt.createdSessionId });
+        router.replace('/(root)/(tabs)/home');
+      } else {
+    
+        console.log('Sign in not complete:', signInAttempt);
+        setError('Something went wrong. Please try again.');
+      }
+    } catch (err: any) {
+      console.error('Sign in error:', JSON.stringify(err, null, 2));
+      setError(err?.errors?.[0]?.longMessage || 'Invalid email or password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.first}>
-        <View style={{ position: "relative", width: "100%", height: 250 }}>
-          
-          <Image 
-            source={images.signUpCar}
-            style={styles.image}
-          />
-
-          <Text style={styles.title}>
-            Welcome 👋
-          </Text>
-
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Image source={images.signUpCar} style={styles.image} />
+          <Text style={styles.title}>Welcome 👋</Text>
         </View>
-        <View style={styles.inputs}>
-           <InputField 
-          label="Email"
-          placeholder="Enter your Email"
-          icon={icons.email}
-          value={form.email}
-          onChangeText={(value:string)=>setForm({...form,email:value})}
+
+        <View style={styles.form}>
+          <InputField
+            label="Email"
+            placeholder="Enter your email"
+            icon={icons.email}
+            value={form.email}
+            onChangeText={(value) => setForm({ ...form, email: value })}
+            autoCapitalize="none"
+            keyboardType="email-address"
           />
-           <InputField 
-          label="Password"
-          placeholder="Enter your Password"
-          icon={icons.lock}
-          value={form.password}
-          secureTextEntry={true}
-          onChangeText={(value:string)=>setForm({...form,password:value})}
+
+          <InputField
+            label="Password"
+            placeholder="Enter your password"
+            icon={icons.lock}
+            value={form.password}
+            onChangeText={(value) => setForm({ ...form, password: value })}
+            secureTextEntry
           />
-        <CustomButton
-        title="Sign in"
-        onPress={handleSubmit}
-        bgVariant="primary"
-        style={{marginTop:24,width:"80%",alignSelf:"center", backgroundColor:"#7C3AED"}}
-        />
-        <OAuth/>
-        <Link href='/(auth)/sign-up' style={{fontSize:16,textAlign:"center",marginTop:24}}>
-        <Text>Don't have An Account?  </Text>
-        <Text style={{color:"#7C3AED"}}>Sign up</Text>
-        </Link>
+
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          <CustomButton
+            title="Sign in"
+            onPress={handleSignIn}
+            bgVariant="primary"
+            disabled={isLoading}
+            isLoading={isLoading}
+            style={styles.button}
+          />
+
+          <OAuth />
+
+          <Link href="/(auth)/sign-up" style={styles.link}>
+            Don't have an account?{' '}
+            <Text style={styles.linkHighlight}>Sign up</Text>
+          </Link>
         </View>
       </View>
     </ScrollView>
-  )
-}
+  );
+};
 
-export default Signin
+export default SignIn;
 
 const styles = StyleSheet.create({
-  container:{
-    flex:1,
-    backgroundColor:"white",
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
   },
-  first:{
-    flex:1,
-    backgroundColor:"white"
+  content: {
+    flex: 1,
   },
-  image:{
-    width:"100%",
-    height:250,
+  header: {
+    position: 'relative',
+    width: '100%',
+    height: 250,
   },
-  title:{
-    position:"absolute",
-    bottom:5,
-    left:5,
-    fontSize:24,
-    lineHeight:32,
-    color:"black",
-    fontWeight:"bold"
+  image: {
+    width: '100%',
+    height: 250,
   },
-  inputs:{
-    padding:5
-  }
-})
+  title: {
+    position: 'absolute',
+    bottom: 16,
+    left: 16,
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  form: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 40,
+  },
+  button: {
+    marginTop: 24,
+    width: '100%',
+  },
+  link: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 24,
+    color: '#374151',
+  },
+  linkHighlight: {
+    color: '#7C3AED',
+    fontWeight: '600',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+});

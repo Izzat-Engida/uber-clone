@@ -1,12 +1,13 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import { Redirect } from 'expo-router'
 
-const chat = () => {
+const index = () => {
   return (
     <View>
-      <Text>chat</Text>
+      <Text>indejx</Text>
     </View>
   )
 }
 
-export default chat
+export default index
