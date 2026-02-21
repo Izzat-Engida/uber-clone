@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router'
 import { icons } from '@/constants'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Maps from './Maps'
-import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
+import BottomSheet, {  BottomSheetView } from "@gorhom/bottom-sheet";
 const RideLayout = ({children,title}:{children:React.ReactNode,title?:string}) => {
     const router=useRouter();
     const bottomref=useRef<BottomSheet>(null);
@@ -30,15 +30,15 @@ const RideLayout = ({children,title}:{children:React.ReactNode,title?:string}) =
             <Maps/>
            
         </View>
-        <BottomSheet ref={bottomref} snapPoints={['40%','85%']} index={0}>
-            <BottomSheetScrollView 
+        <BottomSheet  ref={bottomref} snapPoints={['40%','85%']} index={0}>
+            <BottomSheetView
             style={{
                 flex:1,
                 padding:20
             }}
             >
                 {children}
-            </BottomSheetScrollView>
+            </BottomSheetView>
         </BottomSheet>
       </View>
     </GestureHandlerRootView>

@@ -52,6 +52,7 @@ const Maps = () => {
   }=useLocationStore()
   const [marker,setMarker]=useState<MarkerData[]>([])
   useEffect(()=>{
+    setDrivers(drivers)
     if(Array.isArray(drivers)){
       if(!userLatitude || !userLongitude){
         return
