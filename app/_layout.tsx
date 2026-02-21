@@ -13,7 +13,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(root)" />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </ClerkProvider>
   );
 }
